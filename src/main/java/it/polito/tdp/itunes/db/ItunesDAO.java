@@ -16,7 +16,7 @@ import it.polito.tdp.itunes.model.Track;
 
 public class ItunesDAO {
 	
-	public List<Album> getAllAlbums(){
+	/*public List<Album> getAllAlbums(){
 		final String sql = "SELECT * FROM Album";
 		List<Album> result = new LinkedList<>();
 		
@@ -34,7 +34,7 @@ public class ItunesDAO {
 			throw new RuntimeException("SQL Error");
 		}
 		return result;
-	}
+	}*/
 	
 	public List<Artist> getAllArtists(){
 		final String sql = "SELECT * FROM Artist";
@@ -130,6 +130,31 @@ public class ItunesDAO {
 
 			while (res.next()) {
 				result.add(new MediaType(res.getInt("MediaTypeId"), res.getString("Name")));
+			}
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL Error");
+		}
+		return result;
+	}
+	
+	public List<Album> getVertices(int durata){
+		String sql = "SELECT a.`AlbumId`,a.`ArtistId`,a.`Title`, SUM(t.`Milliseconds`/1000) as durataTotale "
+				+ "FROM album a, track t "
+				+ "WHERE a.`AlbumId`=t.`AlbumId` "
+				+ "GROUP BY a.`AlbumId` "
+				+ "HAVING durataTotale >? ";
+		List<Album> result = new LinkedList<>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, durata);
+			ResultSet res = st.executeQuery();
+
+			while (res.next()) {
+				result.add(new Album(res.getInt("AlbumId"), res.getString("Title"), res.getInt("durataTotale")));
 			}
 			conn.close();
 		} catch (SQLException e) {

@@ -5,7 +5,16 @@
 package it.polito.tdp.itunes;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
+
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultWeightedEdge;
+
+import it.polito.tdp.itunes.model.Album;
+import it.polito.tdp.itunes.model.BilancioAlbum;
 import it.polito.tdp.itunes.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,6 +26,7 @@ import javafx.scene.control.TextField;
 public class FXMLController {
 	
 	private Model model;
+	private Graph<Album, DefaultWeightedEdge> graph;
 
     @FXML // ResourceBundle that was given to the FXMLLoader
     private ResourceBundle resources;
@@ -34,7 +44,7 @@ public class FXMLController {
     private Button btnPercorso; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbA1"
-    private ComboBox<?> cmbA1; // Value injected by FXMLLoader
+    private ComboBox<Album> cmbA1; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbA2"
     private ComboBox<?> cmbA2; // Value injected by FXMLLoader
@@ -50,7 +60,18 @@ public class FXMLController {
 
     @FXML
     void doCalcolaAdiacenze(ActionEvent event) {
+    	Album a = this.cmbA1.getValue();
     	
+    	if(a== null) {
+    		txtResult.setText("Please select an element from combo box \n");
+    		return;
+    	}
+    	List<BilancioAlbum> bilanci = model.getAdiacenti(a);
+    	
+    	txtResult.setText("printing successor of node "+a+".\n");
+    	for(BilancioAlbum b : bilanci) {
+    		txtResult.appendText(b.toString()+"\n");
+    	}
     }
 
     @FXML
@@ -60,6 +81,26 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	String durataTxt = this.txtN.getText();
+    	
+    	int durata = 0;
+    	try {
+    		durata = Integer.parseInt(durataTxt);
+    	}catch(NumberFormatException e) {
+    		System.out.println("valore numerico non valido");
+    	}
+    	
+    	this.graph = this.model.creaGrafo(durata);
+    	
+    	txtResult.appendText("Vertici: "+ this.graph.vertexSet().size()+"\n"+ "Archi: "+this.graph.edgeSet().size());
+    	
+    	List<Album> listaAlbum = new ArrayList();
+    	for(Album a : this.graph.vertexSet()) {
+    		listaAlbum.add(a);
+    	}
+    	Collections.sort(listaAlbum);
+    	
+    	this.cmbA1.getItems().addAll(listaAlbum);
     	
     }
 
